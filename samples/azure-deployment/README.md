@@ -1,8 +1,10 @@
 # Deployment on Azure
 
 This sample shows the customizations that are necessary if you deploy
-on Microsoft Azure. The sample assumes that NGINX ingress is used, but you can
-modify it for other solutions.
+on Microsoft Azure. The sample uses Contour as the ingress controller and
+auto-generates the HTTPProxy resources for the web applications
+(`AUTOGENERATE_INGRESS=true`, `INGRESS_TYPE=contour`). Contour must be installed
+in the cluster. For manual HTTPProxy configuration, see the [Contour sample](../contour).
 
 ## Instructions
 
@@ -11,8 +13,11 @@ modify it for other solutions.
 2. If necessary, edit the `azuredisk-v4m.yaml` file to customize the
 storage class that will be used for the deployment.
 
-3. Edit the host names in the sample yaml files in both the `monitoring`
-and `logging` subdirectories to match your environment's actual host names.
+3. Set `BASE_DOMAIN` in `user.env` to the host name used to access the web
+applications. `ROUTING` selects path-based (default) or host-based routing (see
+[Access the Applications](#access-the-applications)). To use TLS certificates for the
+generated HTTPProxy resources, set `INGRESS_CERT` and `INGRESS_KEY`. See
+[Configure Access to Web Applications](https://documentation.sas.com/?softwareId=obsrv&softwareVersion=prod&docsetId=obsrvdply&docsetTarget=n0auhd4hutsf7xn169hfvriysz4e.htm#n0jiph3lcb5rmsn1g71be3cesmo8).
 
 4. Add additional customization as desired.
 
@@ -34,25 +39,20 @@ components in Azure.
 
 ## Access the Applications
 
-The monitoring and logging applications in this sample are configured for
-path-based ingress and are available at the following URLs. Be sure to 
-replace the host names in the URLs with the host names for your deployment.
+With path-based routing (`ROUTING=path`), the web applications are available at
+the following URLs, where `host.cluster.example.com` is the value of `BASE_DOMAIN`:
 
-* `https://host.mycluster.example.com/grafana`
-* `https://host.mycluster.example.com/dashboards`
+* `https://monitoring.host.cluster.example.com/grafana`
+* `https://logging.host.cluster.example.com/dashboards`
 
-This sample does not make Prometheus and Alertmanager available since these
-web applications do not provide any sort of user-authentication.  However,
-if you want to make these applications available, you can do so by setting 
-the `enabled` key available in the appropriate section of the `monitoring/user-values=prom-operator.yaml`
-file (e.g. set the key `alertmanager.ingress.enabled` to 'true' to make 
-Alertmanager accessible).
+With host-based routing (`ROUTING=host`), they are available at:
 
-If you have chosen to make these applications available, the applications
-are available at the following URLs.  As mentioned above, be sure to
-replace the host names in the URLs with the host names for your deployment.
+* `https://grafana.host.cluster.example.com`
+* `https://dashboards.host.cluster.example.com`
 
-* `https://host.mycluster.example.com/prometheus`
-* `https://host.mycluster.example.com/alertmanager`
+The URLs are also shown at the end of the deployment.
 
-For an example of using host-based ingress, see the [ingress sample](../ingress).
+This sample does not make Prometheus, Alertmanager and OpenSearch available since these
+web applications do not provide any sort of user-authentication. However,
+if you want to make these applications available, set `PROMETHEUS_INGRESS_ENABLE`,
+`ALERTMANAGER_INGRESS_ENABLE` or `OPENSEARCH_INGRESS_ENABLE` to `true` in `user.env`.

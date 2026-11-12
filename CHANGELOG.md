@@ -1,5 +1,10 @@
 # SAS Viya Monitoring for Kubernetes
 ## Unreleased
+* **Overall**
+  * [CHANGE] The Azure deployment sample now uses Contour instead of the deprecated
+ingress-nginx and auto-generates the HTTPProxy resources for the web applications
+(`AUTOGENERATE_INGRESS=true`, `INGRESS_TYPE=contour`). The ingress-nginx-specific
+Ingress definitions have been removed from the sample. (Fixes #921)
 * **Logging**  
   * [CHANGE] Improved handling of log messages from Vault
 * **Metrics**
